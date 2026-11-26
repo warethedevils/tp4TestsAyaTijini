@@ -1,0 +1,6 @@
+/target/
+.idea/
+*.iml
+
+# Support de cours (non versionné, voir README)
+src/main/resources/rag.pdf
