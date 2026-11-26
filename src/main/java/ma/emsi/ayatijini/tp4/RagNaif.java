@@ -22,6 +22,7 @@ import dev.langchain4j.store.embedding.EmbeddingStore;
 import dev.langchain4j.store.embedding.inmemory.InMemoryEmbeddingStore;
 
 import java.util.List;
+import java.util.Scanner;
 
 /**
  * Test 1 : RAG "naïf". Les étapes cachées par le RAG facile sont écrites explicitement
@@ -79,8 +80,30 @@ public class RagNaif {
                 .contentRetriever(contentRetriever)
                 .build();
 
-        String question = "Quelle est la signification de 'RAG' ; à quoi ça sert ?";
-        System.out.println("Question : " + question);
-        System.out.println("Assistant : " + assistant.chat(question));
+        conversationAvec(assistant);
+    }
+
+    /**
+     * Pose plusieurs questions à l'assistant sans recompiler (code fourni dans le TP 2).
+     * La conversation s'arrête quand l'utilisateur tape "fin".
+     */
+    private static void conversationAvec(Assistant assistant) {
+        try (Scanner scanner = new Scanner(System.in)) {
+          while (true) {
+            System.out.println("==================================================");
+            System.out.println("Posez votre question : ");
+            String question = scanner.nextLine();
+            if (question.isBlank()) {
+              continue;
+            }
+            System.out.println("==================================================");
+            if ("fin".equalsIgnoreCase(question)) {
+              break;
+            }
+            String reponse = assistant.chat(question);
+            System.out.println("Assistant : " + reponse);
+            System.out.println("==================================================");
+          }
+        }
     }
 }
