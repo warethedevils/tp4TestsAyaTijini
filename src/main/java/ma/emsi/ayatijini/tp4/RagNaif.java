@@ -21,8 +21,12 @@ import dev.langchain4j.service.AiServices;
 import dev.langchain4j.store.embedding.EmbeddingStore;
 import dev.langchain4j.store.embedding.inmemory.InMemoryEmbeddingStore;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Scanner;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Test 1 : RAG "naïf". Les étapes cachées par le RAG facile sont écrites explicitement
@@ -30,7 +34,19 @@ import java.util.Scanner;
  */
 public class RagNaif {
 
+    private static void configureLogger() {
+       // Configure le logger sous-jacent (java.util.logging)
+       Logger packageLogger = Logger.getLogger("dev.langchain4j");
+       packageLogger.setLevel(Level.FINE); // Ajuster niveau
+       // Ajouter un handler pour la console pour faire afficher les logs
+       ConsoleHandler handler = new ConsoleHandler();
+       handler.setLevel(Level.FINE);
+       packageLogger.addHandler(handler);
+    }
+
     public static void main(String[] args) {
+        configureLogger();
+
         String cle = System.getenv("GEMINI_KEY");
         if (cle == null || cle.isBlank()) {
             throw new IllegalStateException("La variable d'environnement GEMINI_KEY n'est pas définie.");
@@ -39,8 +55,12 @@ public class RagNaif {
         ChatModel model = GoogleGenAiChatModel.builder()
                 .apiKey(cle)
                 // -Dmodele=... permet de changer de modèle (quota gratuit épuisé, par exemple)
-                .modelName(System.getProperty("modele", "gemini-3.5-flash"))
+                .modelName(System.getProperty("modele", "gemini-3.5-flash-lite"))
                 .temperature(0.3)
+                // sans timeout, une requête restée sans réponse bloque le programme indéfiniment
+                .timeout(Duration.ofSeconds(60))
+                .maxRetries(3)
+                .logRequestsAndResponses(true) // pour voir ce que le RAG ajoute à la question
                 .build();
 
         // ---------- Phase 1 : enregistrement des embeddings ----------
